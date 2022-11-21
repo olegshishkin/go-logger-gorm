@@ -45,12 +45,12 @@ func (l *wrapper) Error(_ context.Context, msg string, args ...interface{}) {
 
 func (l *wrapper) Trace(_ context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	sql, rows := fc()
-	dur := time.Since(begin).Microseconds()
+	latency := time.Since(begin).Milliseconds()
 	if err != nil {
-		l.log.Error(err, "sql: (%s), duration: %dμs, rows: %d", sql, dur, rows)
+		l.log.Error(err, "sql: (%s), latency: %dms, rows: %d", sql, latency, rows)
 		return
 	}
-	l.log.Trace("sql: (%s), duration: %dμs, rows: %d", sql, dur, rows)
+	l.log.Trace("sql: (%s), latency: %dms, rows: %d", sql, latency, rows)
 }
 
 // logLevel transforms GORM log level to Logger log level.
