@@ -9,48 +9,51 @@ import (
 	"time"
 )
 
-var (
-	dummyErr = errors.New("error")
-)
+var errDummy = errors.New("error")
 
-type wrapper struct {
+type Wrapper struct {
 	log logger.Logger
 }
 
 // FromLogger transforms Logger logger to GORM logger.
-func FromLogger(l logger.Logger) gorm.Interface {
-	return &wrapper{l}
+func FromLogger(l logger.Logger) *Wrapper {
+	return &Wrapper{l}
 }
 
-func (l *wrapper) LogMode(ll gorm.LogLevel) gorm.Interface {
-	err := l.log.SetLevel(logLevel(ll))
+func (w *Wrapper) LogMode(ll gorm.LogLevel) *Wrapper {
+	err := w.log.SetLevel(logLevel(ll))
 	if err != nil {
 		log.Printf("[WARN] Log level hasn't been set. Error: %v\n", err)
-		return l
+
+		return w
 	}
-	return l
+
+	return w
 }
 
-func (l *wrapper) Info(_ context.Context, msg string, args ...interface{}) {
-	l.log.Info(msg, args)
+func (w *Wrapper) Info(_ context.Context, msg string, args ...interface{}) {
+	w.log.Info(msg, args...)
 }
 
-func (l *wrapper) Warn(_ context.Context, msg string, args ...interface{}) {
-	l.log.Warn(msg, args)
+func (w *Wrapper) Warn(_ context.Context, msg string, args ...interface{}) {
+	w.log.Warn(msg, args...)
 }
 
-func (l *wrapper) Error(_ context.Context, msg string, args ...interface{}) {
-	l.log.Error(dummyErr, msg, args)
+func (w *Wrapper) Error(_ context.Context, msg string, args ...interface{}) {
+	w.log.Error(errDummy, msg, args...)
 }
 
-func (l *wrapper) Trace(_ context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
+func (w *Wrapper) Trace(_ context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	sql, rows := fc()
 	latency := time.Since(begin).Milliseconds()
+
 	if err != nil {
-		l.log.Error(err, "sql: (%s), latency: %dms, rows: %d", sql, latency, rows)
+		w.log.Error(err, "sql: (%s), latency: %dms, rows: %d", sql, latency, rows)
+
 		return
 	}
-	l.log.Trace("sql: (%s), latency: %dms, rows: %d", sql, latency, rows)
+
+	w.log.Trace("sql: (%s), latency: %dms, rows: %d", sql, latency, rows)
 }
 
 // logLevel transforms GORM log level to Logger log level.
