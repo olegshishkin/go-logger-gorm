@@ -20,7 +20,7 @@ func FromLogger(l logger.Logger) *Wrapper {
 	return &Wrapper{l}
 }
 
-func (w *Wrapper) LogMode(ll gorm.LogLevel) *Wrapper {
+func (w *Wrapper) LogMode(ll gorm.LogLevel) gorm.Interface {
 	err := w.log.SetLevel(logLevel(ll))
 	if err != nil {
 		log.Printf("[WARN] Log level hasn't been set. Error: %v\n", err)
